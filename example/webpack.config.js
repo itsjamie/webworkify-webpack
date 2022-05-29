@@ -1,12 +1,15 @@
-var webpack = require('webpack')
-
 module.exports = {
+  mode: 'development',
+  devtool: false,
   entry: {
     app: ['./example/main.js']
   },
   output: {
     filename: 'output.js',
     pathinfo: true
+  },
+  optimization: {
+    chunkIds: 'named',
   },
   module: {
     rules: [
@@ -17,14 +20,11 @@ module.exports = {
           {
             loader: 'babel-loader',
             options: {
-              presets: ['es2015']
+              presets: ['@babel/preset-env']
             }
           }
         ]
       }
     ]
-  },
-  plugins: [
-    new webpack.NamedModulesPlugin()
-  ]
+  }
 }

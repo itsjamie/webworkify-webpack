@@ -1,76 +1,60 @@
-function webpackBootstrapFunc (modules) {
+function webpackBootstrapFunc (modules) { // webpackBootstrap
+/******/  var __webpack_modules__ = ENTRY_MODULE
 /******/  // The module cache
-/******/  var installedModules = {};
+/******/ 	var __webpack_module_cache__ = {}
 
 /******/  // The require function
 /******/  function __webpack_require__(moduleId) {
 
 /******/    // Check if module is in cache
-/******/    if(installedModules[moduleId])
-/******/      return installedModules[moduleId].exports;
+/******/    if(__webpack_module_cache__[moduleId])
+/******/      return __webpack_module_cache__[moduleId].exports;
 
 /******/    // Create a new module (and put it into the cache)
-/******/    var module = installedModules[moduleId] = {
-/******/      i: moduleId,
-/******/      l: false,
+/******/    var module = __webpack_module_cache__[moduleId] = {
 /******/      exports: {}
 /******/    };
 
 /******/    // Execute the module function
-/******/    modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
-/******/    // Flag the module as loaded
-/******/    module.l = true;
-
+/******/    __webpack_modules__[moduleId](module, module.exports, __webpack_require__)
 /******/    // Return the exports of the module
 /******/    return module.exports;
 /******/  }
-
+/******/  
 /******/  // expose the modules object (__webpack_modules__)
-/******/  __webpack_require__.m = modules;
-
-/******/  // expose the module cache
-/******/  __webpack_require__.c = installedModules;
-
-/******/  // identity function for calling harmony imports with the correct context
-/******/  __webpack_require__.i = function(value) { return value; };
-
+/******/  __webpack_require__.m = __webpack_modules__;
+/******/  
 /******/  // define getter function for harmony exports
-/******/  __webpack_require__.d = function(exports, name, getter) {
-/******/    if(!__webpack_require__.o(exports, name)) {
-/******/      Object.defineProperty(exports, name, {
-/******/        configurable: false,
-/******/        enumerable: true,
-/******/        get: getter
-/******/      });
+/******/  __webpack_require__.d = function(exports, definition) {
+/******/    for (var key in definition) {
+/******/      if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/        Object.defineProperty(exports, key, {
+/******/          enumerable: true,
+/******/          get: definition[key]
+/******/        });
+/******/      }
 /******/    }
 /******/  };
-
+/******/
+/******/  // Object.prototype.hasOwnProperty shorthand
+/******/  __webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
 /******/  // define __esModule on exports
 /******/  __webpack_require__.r = function(exports) {
 /******/    Object.defineProperty(exports, '__esModule', { value: true });
 /******/  };
-
+/******/
 /******/  // getDefaultExport function for compatibility with non-harmony modules
 /******/  __webpack_require__.n = function(module) {
 /******/    var getter = module && module.__esModule ?
 /******/      function getDefault() { return module['default']; } :
 /******/      function getModuleExports() { return module; };
-/******/    __webpack_require__.d(getter, 'a', getter);
+/******/    __webpack_require__.d(getter, { a: getter });
 /******/    return getter;
 /******/  };
-
-/******/  // Object.prototype.hasOwnProperty.call
-/******/  __webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
-/******/  // __webpack_public_path__
-/******/  __webpack_require__.p = "/";
-
-/******/  // on error function for async loading
-/******/  __webpack_require__.oe = function(err) { console.error(err); throw err; };
-
-  var f = __webpack_require__(__webpack_require__.s = ENTRY_MODULE)
-  return f.default || f // try to call default if defined to also support babel esmodule exports
+/******/ 
+/******/  var result = __webpack_require__(ENTRY_MODULE)
+/******/  return result.default || result // try to call default if defined to also support babel esmodule exports
 }
 
 var moduleNameReqExp = '[\\.|\\-|\\+|\\w|\/|@]+'
@@ -90,7 +74,7 @@ function getModuleDependencies (sources, module, queueName) {
   retval[queueName] = []
 
   var fnString = module.toString()
-  var wrapperSignature = fnString.match(/^function\s?\w*\(\w+,\s*\w+,\s*(\w+)\)/)
+  var wrapperSignature = fnString.match(/^function\s?\w*\(\w+,\s*\w+,\s*(\w+)\)/) || fnString.match(/^\(\w+,\s*\w+,\s*(\w+)\)\s?\=\s?\>/)
   if (!wrapperSignature) return retval
   var webpackRequireName = wrapperSignature[1]
 
@@ -167,6 +151,12 @@ function getRequiredModules (sources, moduleId) {
   return requiredModules
 }
 
+function getWebpackString(requiredModules, sources, entryModule, key) {
+  let moduleString = requiredModules[key].map((id) => `"${id}": ${sources[key][id].toString()}`).join(",")
+  let webpackBootstrapFuncArr = webpackBootstrapFunc.toString().split("ENTRY_MODULE")
+  return `${webpackBootstrapFuncArr[0]}{${moduleString}}${webpackBootstrapFuncArr[1]}"${entryModule}"${webpackBootstrapFuncArr[2]}`
+}
+
 module.exports = function (moduleId, options) {
   options = options || {}
   var sources = {
@@ -184,10 +174,10 @@ module.exports = function (moduleId, options) {
     }
     requiredModules[module].push(entryModule)
     sources[module][entryModule] = '(function(module, exports, __webpack_require__) { module.exports = __webpack_require__; })'
-    src = src + 'var ' + module + ' = (' + webpackBootstrapFunc.toString().replace('ENTRY_MODULE', JSON.stringify(entryModule)) + ')({' + requiredModules[module].map(function (id) { return '' + JSON.stringify(id) + ': ' + sources[module][id].toString() }).join(',') + '});\n'
+    src = src + `var ${module} = (${getWebpackString(requiredModules, sources, entryModule, modules)})();\n`
   })
 
-  src = src + 'new ((' + webpackBootstrapFunc.toString().replace('ENTRY_MODULE', JSON.stringify(moduleId)) + ')({' + requiredModules.main.map(function (id) { return '' + JSON.stringify(id) + ': ' + sources.main[id].toString() }).join(',') + '}))(self);'
+  src = src + `(${getWebpackString(requiredModules, sources, moduleId, "main")})()();`
 
   var blob = new window.Blob([src], { type: 'text/javascript' })
   if (options.bare) { return blob }

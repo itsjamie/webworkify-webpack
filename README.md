@@ -10,6 +10,15 @@ inspired by [webworkify](https://github.com/substack/webworkify)
 npm install webworkify-webpack --save
 ```
 
+# v3 vs v2
+
+Update the bootstrap code to work with the webpack v5 version.
+Credit to: https://github.com/borisirota/webworkify-webpack/pull/44, wupeng-engineer, for what this is based on.
+
+This is mainly just that, updated and tested to work with hls.js, as support for this was blocking upgrading to webpack v5 as the built-in support in Webpack doesn't allow an "inline-worker", the Blob workflow. And the worker-loader plugin with v5 has you manually produce a second asset that is embedded, which increases the bundle size.
+
+The approach here still seems to be the best available, but does require a more future error-prone integration.
+
 # v2 vs v1
 
 For v1 go to: [1.1.8](https://github.com/borisirota/webworkify-webpack/tree/1.1.8)
