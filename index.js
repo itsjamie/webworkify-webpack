@@ -177,7 +177,7 @@ module.exports = function (moduleId, options) {
     src = src + `var ${module} = (${getWebpackString(requiredModules, sources, entryModule, modules)})();\n`
   })
 
-  src = src + `(${getWebpackString(requiredModules, sources, moduleId, "main")})()();`
+  src = src + `(${getWebpackString(requiredModules, sources, moduleId, "main")})()(self);`
 
   var blob = new window.Blob([src], { type: 'text/javascript' })
   if (options.bare) { return blob }
